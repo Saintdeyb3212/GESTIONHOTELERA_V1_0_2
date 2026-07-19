@@ -91,6 +91,7 @@ builder.Services.AddScoped<IReporteServicio, ReporteServicio>();
 var app = builder.Build();
 
 // --- INICIO DE CREACIÓN DE BASE DE DATOS Y USUARIO ADMIN ---
+Console.WriteLine("--- CONECTANDO A: " + connectionString);
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
