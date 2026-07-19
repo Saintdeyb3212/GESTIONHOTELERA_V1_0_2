@@ -1,0 +1,529 @@
+@page "/pagos"
+@using GESTIONHOTELERA_V1_0_2.Data.ENTIDADES
+@using GESTIONHOTELERA_V1_0_2.Data.REPOSITORIO.IREPOSITORIO
+@using GESTIONHOTELERA_V1_0_2.Aplication.SERVICIOS
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Administrador,Empleado,Recepcion")]
+@inject IPagoRepositorio PagoRepositorio
+@inject IReservaRepositorio ReservaRepositorio
+@inject IMetodoPagoRepositorio MetodoPagoRepositorio
+@inject IPagoServicio PagoServicio
+
+<PageTitle>Pagos</PageTitle>
+
+<h3>Pagos</h3>
+<p class="text-muted">Registra adelantos y pagos finales de reservas, controla saldo pendiente y consulta el historial de pagos.</p>
+
+@if (!string.IsNullOrWhiteSpace(mensaje))
+{
+    <div class="alert @(operacionExitosa ? "alert-success" : "alert-danger")" role="alert">@mensaje</div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Registrar pago</div>
+            <div class="card-body">
+                <EditForm Model="formulario" OnValidSubmit="RegistrarPagoAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="buscarClientePago">Buscar cliente para registrar el pago</label>
+                        <div class="input-group">
+                            <input id="buscarClientePago"
+                                   class="form-control"
+                                   placeholder="Escriba nombres, apellidos o documento"
+                                   @bind="criterioClientePago"
+                                   @bind:event="oninput" />
+                            <button type="button" class="btn btn-outline-primary" @onclick="BuscarReservasPendientesCliente">
+                                Buscar
+                            </button>
+                            @if (busquedaClientePagoRealizada)
+                            {
+                                <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarBusquedaClientePago">
+                                    Limpiar
+                                </button>
+                            }
+                        </div>
+                        <small class="text-muted">La búsqueda muestra únicamente reservas activas que todavía tienen saldo pendiente.</small>
+                    </div>
+
+                    @if (busquedaClientePagoRealizada)
+                    {
+                        <div class="mb-3">
+                            @if (!reservasEncontradasPago.Any())
+                            {
+                                <div class="alert alert-warning py-2 mb-0" role="alert">
+                                    @(string.IsNullOrWhiteSpace(mensajeBusquedaPago)
+                                        ? "No se encontraron reservas pendientes de pago para ese cliente."
+                                        : mensajeBusquedaPago)
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="list-group">
+                                    @foreach (var reserva in reservasEncontradasPago)
+                                    {
+                                        <button type="button"
+                                                class="list-group-item list-group-item-action @(formulario.IdReserva == reserva.IdReserva ? "active" : string.Empty)"
+                                                @onclick="() => SeleccionarReservaParaPago(reserva)">
+                                            <div class="d-flex w-100 justify-content-between gap-2">
+                                                <strong>#@reserva.IdReserva - @NombreCliente(reserva)</strong>
+                                                <span>@FormatoMoneda(SaldoPendiente(reserva))</span>
+                                            </div>
+                                            <small class="@(formulario.IdReserva == reserva.IdReserva ? "text-white-50" : "text-muted")">
+                                                Saldo pendiente · @reserva.FechaReserva.ToLocalTime().ToString("dd/MM/yyyy")
+                                            </small>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label" for="reserva">Reservas recientes con saldo pendiente</label>
+                        <select id="reserva"
+                                class="form-select"
+                                value="@formulario.IdReserva"
+                                @onchange="CambiarReservaDesdeCombo">
+                            <option value="0">Seleccione una reserva</option>
+                            @foreach (var reserva in reservasPagables)
+                            {
+                                <option value="@reserva.IdReserva">#@reserva.IdReserva - @NombreCliente(reserva) - Saldo: @FormatoMoneda(SaldoPendiente(reserva))</option>
+                            }
+                        </select>
+                        <small class="text-muted">No se muestran reservas canceladas, inactivas ni pagadas al 100 %.</small>
+                    </div>
+
+                    @if (ReservaSeleccionada is not null)
+                    {
+                        <div class="border rounded p-3 mb-3 bg-light">
+                            <div class="d-flex justify-content-between">
+                                <span>Total reserva</span>
+                                <strong>@FormatoMoneda(ReservaSeleccionada.TotalEstimado)</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Total pagado</span>
+                                <strong>@FormatoMoneda(TotalPagado(ReservaSeleccionada))</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Saldo pendiente</span>
+                                <strong class="@(SaldoPendiente(ReservaSeleccionada) <= 0 ? "text-success" : "text-danger")">@FormatoMoneda(SaldoPendiente(ReservaSeleccionada))</strong>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-secondary">@ReservaSeleccionada.EstadoReserva</span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label" for="metodoPago">Método de pago</label>
+                        <InputSelect id="metodoPago" class="form-select" @bind-Value="formulario.IdMetodoPago">
+                            <option value="0">Seleccione un método</option>
+                            @foreach (var metodo in metodosPago)
+                            {
+                                <option value="@metodo.IdMetodoPago">@metodo.NombreMetodoPago</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="tipoPago">Tipo de pago</label>
+                        <InputSelect id="tipoPago" class="form-select" @bind-Value="formulario.TipoPago">
+                            <option value="@TiposPago.Adelanto">Adelanto</option>
+                            <option value="@TiposPago.PagoFinal">Pago final</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="monto">Monto</label>
+                        <InputNumber id="monto" class="form-control" @bind-Value="formulario.Monto" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="fechaPago">Fecha de pago</label>
+                        <InputDate id="fechaPago" class="form-control" @bind-Value="formulario.FechaPago" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="numeroOperacion">Número de operación</label>
+                        <InputText id="numeroOperacion" class="form-control" @bind-Value="formulario.NumeroOperacion" />
+                        <small class="text-muted">Opcional. Útil para Yape, Plin, transferencia o tarjeta.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="observacion">Observación</label>
+                        <InputTextArea id="observacion" class="form-control" rows="2" @bind-Value="formulario.Observacion" />
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Registrar pago</button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarFormulario">Limpiar</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">Resumen financiero de reservas</div>
+            <div class="card-body">
+                @if (!reservasPagables.Any())
+                {
+                    <p class="text-muted">No hay reservas con saldo pendiente.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Reserva</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Pagado</th>
+                                    <th class="text-end">Saldo</th>
+                                    <th>Progreso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var reserva in reservasPagables)
+                                {
+                                    var pagado = TotalPagado(reserva);
+                                    var saldo = SaldoPendiente(reserva);
+                                    var porcentaje = PorcentajePagado(reserva);
+                                    <tr class="@(reserva.EstadoReserva == EstadosReserva.Cancelada ? "table-warning" : string.Empty)">
+                                        <td>#@reserva.IdReserva</td>
+                                        <td>@NombreCliente(reserva)</td>
+                                        <td><span class="badge bg-secondary">@reserva.EstadoReserva</span></td>
+                                        <td class="text-end">@FormatoMoneda(reserva.TotalEstimado)</td>
+                                        <td class="text-end">@FormatoMoneda(pagado)</td>
+                                        <td class="text-end @(saldo <= 0 ? "text-success" : "text-danger")">@FormatoMoneda(saldo)</td>
+                                        <td style="min-width: 160px;">
+                                            <div class="progress" role="progressbar" aria-label="Progreso de pago" aria-valuenow="@porcentaje" aria-valuemin="0" aria-valuemax="100">
+                                                <div class="progress-bar" style="width: @porcentaje%">@porcentaje%</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span>Historial de pagos</span>
+                <div class="input-group input-group-sm" style="max-width: 320px;">
+                    <input class="form-control" placeholder="Buscar pago..." @bind="criterioBusqueda" @bind:event="oninput" />
+                    <button class="btn btn-outline-secondary" type="button" @onclick="BuscarAsync">Buscar</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="CargarDatosAsync">Todos</button>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!pagos.Any())
+                {
+                    <p class="text-muted">No hay pagos registrados.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Reserva</th>
+                                    <th>Cliente</th>
+                                    <th>Tipo</th>
+                                    <th>Método</th>
+                                    <th>Operación</th>
+                                    <th class="text-end">Monto</th>
+                                    <th>Observación</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var pago in pagos)
+                                {
+                                    <tr>
+                                        <td>@pago.FechaPago.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                                        <td>#@pago.IdReserva</td>
+                                        <td>@NombreCliente(pago.Reserva)</td>
+                                        <td>@pago.TipoPago</td>
+                                        <td>@pago.MetodoPago?.NombreMetodoPago</td>
+                                        <td>@(string.IsNullOrWhiteSpace(pago.NumeroOperacion) ? "-" : pago.NumeroOperacion)</td>
+                                        <td class="text-end fw-semibold">@FormatoMoneda(pago.Monto)</td>
+                                        <td>@(string.IsNullOrWhiteSpace(pago.Observacion) ? "-" : pago.Observacion)</td>
+                                        <td>
+                                            <span class="badge @(pago.Activo ? "bg-success" : "bg-secondary")">@(pago.Activo ? "Activo" : "Inactivo")</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Reserva> reservas = new List<Reserva>();
+    private List<Reserva> reservasPagables = new List<Reserva>();
+    private List<MetodoPago> metodosPago = new List<MetodoPago>();
+    private List<Pago> pagos = new List<Pago>();
+    private PagoFormulario formulario = new();
+    private string? mensaje;
+    private bool operacionExitosa;
+    private string criterioBusqueda = string.Empty;
+    private string criterioClientePago = string.Empty;
+    private bool busquedaClientePagoRealizada;
+    private string? mensajeBusquedaPago;
+    private List<Reserva> reservasEncontradasPago = new List<Reserva>();
+
+    private Reserva? ReservaSeleccionada => reservasPagables.FirstOrDefault(r => r.IdReserva == formulario.IdReserva);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        reservas = (await ReservaRepositorio.GetAllAsync()).ToList();
+        reservasPagables = reservas
+            .Where(EsReservaPagable)
+            .OrderByDescending(r => r.FechaReserva)
+            .ToList();
+
+        if (formulario.IdReserva > 0 && reservasPagables.All(r => r.IdReserva != formulario.IdReserva))
+        {
+            formulario.IdReserva = 0;
+        }
+
+        if (busquedaClientePagoRealizada)
+        {
+            AplicarFiltroClientePago();
+        }
+        metodosPago = (await MetodoPagoRepositorio.GetAllAsync()).Where(m => m.Activo).OrderBy(m => m.NombreMetodoPago).ToList();
+        pagos = (await PagoRepositorio.GetAllAsync()).ToList();
+        criterioBusqueda = string.Empty;
+    }
+
+    private async Task BuscarAsync()
+    {
+        if (string.IsNullOrWhiteSpace(criterioBusqueda))
+        {
+            await CargarDatosAsync();
+            return;
+        }
+
+        pagos = (await PagoRepositorio.BuscarAsync(criterioBusqueda)).ToList();
+    }
+
+    private void BuscarReservasPendientesCliente()
+    {
+        busquedaClientePagoRealizada = true;
+        AplicarFiltroClientePago();
+    }
+
+    private void AplicarFiltroClientePago()
+    {
+        var criterio = criterioClientePago.Trim();
+        mensajeBusquedaPago = null;
+
+        if (criterio.Length < 2)
+        {
+            reservasEncontradasPago = new List<Reserva>();
+            mensajeBusquedaPago = "Escriba al menos 2 caracteres para buscar al cliente.";
+            return;
+        }
+
+        reservasEncontradasPago = reservasPagables
+            .Where(r => CoincideCliente(r, criterio))
+            .OrderByDescending(r => r.FechaReserva)
+            .ToList();
+
+        if (!reservasEncontradasPago.Any())
+        {
+            mensajeBusquedaPago = "No se encontraron reservas con saldo pendiente para ese cliente.";
+        }
+    }
+
+    private void LimpiarBusquedaClientePago()
+    {
+        criterioClientePago = string.Empty;
+        busquedaClientePagoRealizada = false;
+        mensajeBusquedaPago = null;
+        reservasEncontradasPago = new List<Reserva>();
+    }
+
+    private void CambiarReservaDesdeCombo(ChangeEventArgs e)
+    {
+        var idReserva = int.TryParse(e.Value?.ToString(), out var valor) ? valor : 0;
+        formulario.IdReserva = idReserva;
+        var reserva = reservasPagables.FirstOrDefault(r => r.IdReserva == idReserva);
+        if (reserva is not null)
+        {
+            CompletarDatosReservaSeleccionada(reserva);
+        }
+        else
+        {
+            formulario.Monto = 0m;
+            formulario.TipoPago = TiposPago.Adelanto;
+        }
+    }
+
+    private void SeleccionarReservaParaPago(Reserva reserva)
+    {
+        formulario.IdReserva = reserva.IdReserva;
+        CompletarDatosReservaSeleccionada(reserva);
+    }
+
+    private void CompletarDatosReservaSeleccionada(Reserva reserva)
+    {
+        formulario.Monto = SaldoPendiente(reserva);
+        formulario.TipoPago = TiposPago.PagoFinal;
+    }
+
+    private async Task RegistrarPagoAsync()
+    {
+        mensaje = null;
+
+        if (formulario.IdReserva <= 0)
+        {
+            MostrarError("Debe seleccionar una reserva.");
+            return;
+        }
+
+        if (formulario.IdMetodoPago <= 0)
+        {
+            MostrarError("Debe seleccionar un método de pago.");
+            return;
+        }
+
+        var pago = new Pago
+        {
+            IdReserva = formulario.IdReserva,
+            IdMetodoPago = formulario.IdMetodoPago,
+            TipoPago = formulario.TipoPago,
+            Monto = formulario.Monto,
+            FechaPago = formulario.FechaPago,
+            NumeroOperacion = NormalizarOpcional(formulario.NumeroOperacion),
+            Observacion = NormalizarOpcional(formulario.Observacion)
+        };
+
+        var resultado = await PagoServicio.RegistrarPagoAsync(pago);
+        if (!resultado.Exitoso)
+        {
+            MostrarError(resultado.Mensaje);
+            return;
+        }
+
+        operacionExitosa = true;
+        mensaje = resultado.Mensaje;
+        LimpiarFormulario();
+        await CargarDatosAsync();
+    }
+
+    private void LimpiarFormulario()
+    {
+        formulario = new PagoFormulario();
+    }
+
+    private void MostrarError(string? texto)
+    {
+        operacionExitosa = false;
+        mensaje = string.IsNullOrWhiteSpace(texto) ? "No se pudo completar la operación." : texto;
+    }
+
+    private static string? NormalizarOpcional(string? valor)
+    {
+        return string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+    }
+
+    private static string NombreCliente(Reserva? reserva)
+    {
+        if (reserva?.Cliente is null)
+        {
+            return "Sin cliente";
+        }
+
+        return $"{reserva.Cliente.Nombres} {reserva.Cliente.Apellidos}".Trim();
+    }
+
+    private static bool EsReservaPagable(Reserva reserva)
+    {
+        return reserva.Activo
+            && reserva.EstadoReserva != EstadosReserva.Cancelada
+            && SaldoPendiente(reserva) > 0.005m;
+    }
+
+    private static bool CoincideCliente(Reserva reserva, string criterio)
+    {
+        var nombreCompleto = NombreCliente(reserva);
+        var documento = reserva.Cliente?.NumeroDocumento ?? string.Empty;
+
+        return nombreCompleto.Contains(criterio, StringComparison.OrdinalIgnoreCase)
+            || documento.Contains(criterio, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static decimal TotalPagado(Reserva reserva)
+    {
+        return reserva.Pagos?.Where(p => p.Activo).Sum(p => p.Monto) ?? 0m;
+    }
+
+    private static decimal SaldoPendiente(Reserva reserva)
+    {
+        var saldo = reserva.TotalEstimado - TotalPagado(reserva);
+        return saldo < 0 ? 0 : saldo;
+    }
+
+    private static int PorcentajePagado(Reserva reserva)
+    {
+        if (reserva.TotalEstimado <= 0)
+        {
+            return 100;
+        }
+
+        var porcentaje = (int)Math.Round(TotalPagado(reserva) / reserva.TotalEstimado * 100, 0);
+        return Math.Clamp(porcentaje, 0, 100);
+    }
+
+    private static string FormatoMoneda(decimal monto)
+    {
+        return $"S/. {monto:N2}";
+    }
+
+    private sealed class PagoFormulario
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar una reserva.")]
+        public int IdReserva { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un método de pago.")]
+        public int IdMetodoPago { get; set; }
+
+        [Required(ErrorMessage = "El tipo de pago es obligatorio.")]
+        public string TipoPago { get; set; } = TiposPago.Adelanto;
+
+        [Range(0.01, 999999.99, ErrorMessage = "El monto debe ser mayor que cero.")]
+        public decimal Monto { get; set; }
+
+        [Required(ErrorMessage = "La fecha de pago es obligatoria.")]
+        public DateTime FechaPago { get; set; } = DateTime.Today;
+
+        [StringLength(100, ErrorMessage = "El número de operación no puede tener más de 100 caracteres.")]
+        public string? NumeroOperacion { get; set; }
+
+        [StringLength(500, ErrorMessage = "La observación no puede tener más de 500 caracteres.")]
+        public string? Observacion { get; set; }
+    }
+}

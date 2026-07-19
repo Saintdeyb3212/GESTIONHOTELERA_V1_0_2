@@ -1,0 +1,250 @@
+@page "/Account/LoginWith2fa"
+@layout GESTIONHOTELERA_V1_0_2.Components.Layout.LoginLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using GESTIONHOTELERA_V1_0_2.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<LoginWith2fa> Logger
+
+<PageTitle>Autenticación de dos factores</PageTitle>
+
+<main class="twofa-page">
+    <section class="twofa-brand" aria-label="Hotel Walay Perú">
+        <div class="brand-pattern" aria-hidden="true"></div>
+
+        <div class="brand-header">
+            <div class="brand-monogram" aria-hidden="true">
+                <span class="brand-crown">♛</span>
+                <span>HW</span>
+            </div>
+            <h2>Hotel Walay Perú</h2>
+            <p>Sistema de Gestión Hotelera</p>
+        </div>
+
+        <div class="security-visual" aria-hidden="true">
+            <span class="orbit orbit-one"></span>
+            <span class="orbit orbit-two"></span>
+            <span class="spark spark-one"></span>
+            <span class="spark spark-two"></span>
+            <span class="spark spark-three"></span>
+
+            <div class="shield-stage">
+                <svg class="shield-graphic" viewBox="0 0 260 310" role="img" aria-label="Escudo de seguridad">
+                    <defs>
+                        <linearGradient id="shieldGold" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#fff1a8" />
+                            <stop offset="35%" stop-color="#d7a72f" />
+                            <stop offset="70%" stop-color="#f3d06d" />
+                            <stop offset="100%" stop-color="#9a6710" />
+                        </linearGradient>
+                        <linearGradient id="shieldDark" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#272727" />
+                            <stop offset="100%" stop-color="#080808" />
+                        </linearGradient>
+                        <filter id="shieldShadow" x="-30%" y="-30%" width="160%" height="160%">
+                            <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#000000" flood-opacity="0.48" />
+                        </filter>
+                    </defs>
+                    <path filter="url(#shieldShadow)" fill="url(#shieldGold)" d="M130 8 239 48v89c0 73-43 132-109 165C64 269 21 210 21 137V48L130 8Z" />
+                    <path fill="url(#shieldDark)" d="M130 23 224 58v78c0 62-35 114-94 145-59-31-94-83-94-145V58l94-35Z" />
+                    <path fill="none" stroke="#f7dc87" stroke-width="3" opacity=".65" d="M130 33 214 64v72c0 57-32 104-84 133-52-29-84-76-84-133V64l84-31Z" />
+                    <rect x="83" y="126" width="94" height="80" rx="14" fill="url(#shieldGold)" />
+                    <path d="M99 127v-22c0-19 14-35 31-35s31 16 31 35v22" fill="none" stroke="url(#shieldGold)" stroke-width="17" stroke-linecap="round" />
+                    <circle cx="130" cy="163" r="11" fill="#18120a" />
+                    <path d="m124 171-5 19h22l-5-19Z" fill="#18120a" />
+                </svg>
+                <div class="stage-base"></div>
+            </div>
+        </div>
+
+        <div class="brand-footer">
+            <span class="mini-shield" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2 20 5v6c0 5.2-3.1 9.4-8 11-4.9-1.6-8-5.8-8-11V5l8-3Z" />
+                    <path d="m8.5 12 2.2 2.2 4.8-5" />
+                </svg>
+            </span>
+            <div>
+                <strong>Seguridad que genera confianza</strong>
+                <p>Protegemos su información y la de su hotel con altos estándares de seguridad.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="twofa-content">
+        <article class="twofa-card">
+            <header class="card-brand">
+                <div class="hotel-mark" aria-hidden="true">
+                    <svg viewBox="0 0 48 48">
+                        <path d="M12 42V14h24v28M8 42h32M18 42V30h12v12M18 20h3M27 20h3M18 25h3M27 25h3" />
+                        <path d="m16 10 8-5 8 5" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="card-brand-name">Hotel Walay Perú</span>
+                    <span class="card-brand-subtitle">Sistema de Gestión Hotelera</span>
+                </div>
+            </header>
+
+            <div class="card-separator" aria-hidden="true"></div>
+
+            <div class="twofa-heading">
+                <div class="heading-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3 20 6v5c0 5-3.1 9.2-8 10-4.9-.8-8-5-8-10V6l8-3Z" />
+                        <path d="m8.5 12 2.2 2.2 4.8-5" />
+                    </svg>
+                </div>
+                <div>
+                    <h1>Autenticación de dos factores</h1>
+                    <span class="heading-accent" aria-hidden="true"></span>
+                </div>
+            </div>
+
+            <StatusMessage Message="@message" />
+
+            <p class="twofa-description">
+                Su cuenta está protegida con autenticación multifactor.<br />
+                Ingrese el código de su aplicación autenticadora.
+            </p>
+
+            <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post" class="twofa-form">
+                <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+                <input type="hidden" name="RememberMe" value="@RememberMe" />
+                <DataAnnotationsValidator />
+                <ValidationSummary class="validation-summary" role="alert" />
+
+                <div class="code-field-wrap">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="6" y="9" width="12" height="11" rx="2" />
+                            <path d="M9 9V7a3 3 0 0 1 6 0v2M12 13v3" />
+                        </svg>
+                    </span>
+
+                    <InputText @bind-Value="Input.TwoFactorCode"
+                               id="two-factor-code"
+                               class="code-input"
+                               autocomplete="one-time-code"
+                               inputmode="numeric"
+                               maxlength="7"
+                               spellcheck="false"
+                               aria-label="Código de autenticación"
+                               placeholder="Código de autenticación" />
+                </div>
+
+                <ValidationMessage For="() => Input.TwoFactorCode"
+                                   class="field-validation" />
+
+                <label for="remember-machine" class="remember-option">
+                    <InputCheckbox @bind-Value="Input.RememberMachine" id="remember-machine" class="remember-checkbox" />
+                    <span>Recordar este equipo</span>
+                </label>
+
+                <button type="submit" class="twofa-submit">
+                    <span class="submit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" />
+                        </svg>
+                    </span>
+                    <span>Iniciar sesión</span>
+                </button>
+            </EditForm>
+
+            <div class="recovery-divider" aria-hidden="true">
+                <span></span>
+                <div>
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3 20 6v5c0 5-3.1 9.2-8 10-4.9-.8-8-5-8-10V6l8-3Z" />
+                    </svg>
+                </div>
+                <span></span>
+            </div>
+
+            <p class="recovery-help">
+                ¿No tiene acceso a su dispositivo autenticador?<br />
+                Puede <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">iniciar sesión con un código de recuperación</a>.
+            </p>
+        </article>
+
+        <p class="page-security-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3 20 6v5c0 5-3.1 9.2-8 10-4.9-.8-8-5-8-10V6l8-3Z" />
+            </svg>
+            Conexión segura y protegida
+        </p>
+    </section>
+</main>
+
+@code {
+    private string? message;
+    private ApplicationUser user = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool RememberMe { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Si la cookie principal ya esta autenticada, esta pantalla no debe
+        // mostrarse dentro de la sesion de otro usuario.
+        if (HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            RedirectManager.RedirectTo("Home");
+        }
+
+        // Solo se permite continuar cuando Identity conserva un intento 2FA valido.
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+        if (user is null)
+        {
+            RedirectManager.RedirectTo("Account/Login");
+        }
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
+        var userId = await UserManager.GetUserIdAsync(user);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
+            RedirectManager.RedirectTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "Home" : ReturnUrl);
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User with ID '{UserId}' account locked out.", userId);
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
+            message = "Error: código de autenticación inválido.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Ingrese el código de su aplicación autenticadora.")]
+        [StringLength(7, ErrorMessage = "El código debe tener entre {2} y {1} caracteres.", MinimumLength = 6)]
+        [DataType(DataType.Text)]
+        [Display(Name = "Código del autenticador")]
+        public string? TwoFactorCode { get; set; }
+
+        [Display(Name = "Recordar este equipo")]
+        public bool RememberMachine { get; set; }
+    }
+}

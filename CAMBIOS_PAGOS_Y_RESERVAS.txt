@@ -1,0 +1,24 @@
+CAMBIOS REALIZADOS - PAGOS Y RESERVAS
+=====================================
+
+1. Modulo Pagos (/pagos)
+- El selector de reservas ahora muestra solamente reservas activas, no canceladas y con saldo pendiente mayor que cero.
+- Las reservas pagadas al 100 % ya no aparecen en el selector ni en el resumen financiero de pendientes.
+- Se agrego un buscador exclusivo para registrar pagos por nombres, apellidos o documento del cliente.
+- La busqueda muestra todas las reservas pendientes del cliente encontrado.
+- Al seleccionar una reserva, se carga el saldo pendiente como monto sugerido y el tipo Pago final; ambos pueden modificarse antes de registrar.
+- Se mantiene sin cambios el buscador independiente del historial de pagos registrados.
+
+2. Modulo Reservas (/reservas)
+- Se agrego un buscador de clientes registrados por nombres, apellidos o documento.
+- Los resultados permiten seleccionar al cliente y cargar sus datos en el formulario de nueva reserva.
+- Se mantiene la opcion de ingresar manualmente los datos para un cliente nuevo.
+- El boton Cliente nuevo limpia la seleccion previa y habilita el flujo normal de registro.
+- La busqueda automatica por numero de documento sigue funcionando.
+
+Archivos modificados:
+- GESTIONHOTELERA_V1_0_2/Components/Pages/PagoPages/PagoList.razor
+- GESTIONHOTELERA_V1_0_2/Components/Pages/ReservaPages/ReservaList.razor
+
+Nota de validacion:
+No se modificaron entidades, migraciones, tablas ni cadenas de conexion.

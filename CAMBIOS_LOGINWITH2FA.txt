@@ -1,0 +1,15 @@
+CAMBIOS APLICADOS A /Account/LoginWith2fa
+
+1. Se mantuvo intacta la logica de ASP.NET Core Identity y la validacion 2FA.
+2. Se reemplazo la vista simple por un diseno profesional responsivo:
+   - Panel de marca Hotel Walay Peru en negro y dorado.
+   - Escudo de seguridad creado con SVG/CSS, sin dependencias externas.
+   - Tarjeta de autenticacion moderna y centrada.
+   - Campo para codigo, casilla Recordar este equipo, boton y enlace de recuperacion.
+   - Adaptacion para escritorio, tablet y telefono.
+3. Se agrego CSS aislado en:
+   Components/Account/Pages/LoginWith2fa.razor.css
+4. Se agrego el JSON de especificacion visual en:
+   wwwroot/design/login-with2fa-design.json
+
+No se modificaron usuarios, roles, cookies, conexion a base de datos ni flujo de inicio de sesion.

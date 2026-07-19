@@ -1,0 +1,307 @@
+@page "/clientes"
+@using GESTIONHOTELERA_V1_0_2.Data.ENTIDADES
+@using GESTIONHOTELERA_V1_0_2.Aplication.SERVICIOS
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Administrador,Empleado,Recepcion")]
+@inject IClienteServicio ClienteServicio
+
+<PageTitle>Clientes</PageTitle>
+
+<h3>Clientes</h3>
+<p class="text-muted">Administra clientes para reservas actuales e historial. No se elimina información físicamente.</p>
+
+@if (!string.IsNullOrWhiteSpace(mensaje))
+{
+    <div class="alert @(operacionExitosa ? "alert-success" : "alert-danger")" role="alert">@mensaje</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">@(formulario.IdCliente == 0 ? "Nuevo cliente" : "Editar cliente")</div>
+            <div class="card-body">
+                <EditForm Model="formulario" OnValidSubmit="GuardarAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label" for="nombres">Nombres</label>
+                            <InputText id="nombres" class="form-control" @bind-Value="formulario.Nombres" />
+                            <ValidationMessage For="() => formulario.Nombres" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="apellidos">Apellidos</label>
+                            <InputText id="apellidos" class="form-control" @bind-Value="formulario.Apellidos" />
+                            <ValidationMessage For="() => formulario.Apellidos" />
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mt-1">
+                        <div class="col-md-4">
+                            <label class="form-label" for="tipoDocumento">Tipo</label>
+                            <InputSelect id="tipoDocumento" class="form-select" @bind-Value="formulario.TipoDocumento">
+                                <option value="DNI">DNI</option>
+                                <option value="CE">CE</option>
+                                <option value="PASAPORTE">Pasaporte</option>
+                                <option value="RUC">RUC</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => formulario.TipoDocumento" />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label" for="numeroDocumento">Número documento</label>
+                            <InputText id="numeroDocumento" class="form-control" @bind-Value="formulario.NumeroDocumento" />
+                            <ValidationMessage For="() => formulario.NumeroDocumento" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label" for="telefono">Teléfono</label>
+                        <InputText id="telefono" class="form-control" @bind-Value="formulario.Telefono" />
+                        <ValidationMessage For="() => formulario.Telefono" />
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label" for="email">Correo electrónico</label>
+                        <InputText id="email" class="form-control" @bind-Value="formulario.Email" />
+                        <ValidationMessage For="() => formulario.Email" />
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label" for="direccion">Dirección</label>
+                        <InputTextArea id="direccion" class="form-control" rows="2" @bind-Value="formulario.Direccion" />
+                        <ValidationMessage For="() => formulario.Direccion" />
+                    </div>
+
+                    @if (formulario.IdCliente > 0)
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            Estado actual: <strong>@(formulario.Activo ? "Activo" : "Inactivo")</strong>
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary" disabled="@procesando">Guardar</button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarFormulario" disabled="@procesando">Nuevo</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-7">
+                        <input class="form-control" placeholder="Buscar por nombre, documento, teléfono o correo" @bind="criterioBusqueda" @bind:event="oninput" />
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <InputCheckbox id="incluirInactivos" class="form-check-input" @bind-Value="incluirInactivos" />
+                            <label class="form-check-label" for="incluirInactivos">Ver inactivos</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="button" class="btn btn-outline-primary" @onclick="BuscarAsync">Buscar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (clientes is null)
+                {
+                    <p class="p-3">Cargando...</p>
+                }
+                else if (!clientes.Any())
+                {
+                    <p class="p-3 mb-0">No se encontraron clientes.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Documento</th>
+                                    <th>Contacto</th>
+                                    <th>Reservas</th>
+                                    <th>Activo</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cliente in clientes)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@cliente.Apellidos, @cliente.Nombres</strong><br />
+                                            <small class="text-muted">@cliente.Direccion</small>
+                                        </td>
+                                        <td>@cliente.TipoDocumento @cliente.NumeroDocumento</td>
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(cliente.Telefono))
+                                            {
+                                                <span>@cliente.Telefono</span><br />
+                                            }
+                                            <small class="text-muted">@cliente.Email</small>
+                                        </td>
+                                        <td>@cliente.Reservas.Count</td>
+                                        <td><span class="badge @(cliente.Activo ? "text-bg-success" : "text-bg-secondary")">@(cliente.Activo ? "Activo" : "Inactivo")</span></td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditarAsync(cliente.IdCliente)">Editar</button>
+                                            @if (cliente.Activo)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DesactivarAsync(cliente.IdCliente)">Desactivar</button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-success" @onclick="() => ActivarAsync(cliente.IdCliente)">Activar</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Cliente> clientes = new List<Cliente>();
+    private ClienteForm formulario = new();
+    private string criterioBusqueda = string.Empty;
+    private bool incluirInactivos = true;
+    private string? mensaje;
+    private bool operacionExitosa;
+    private bool procesando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        clientes = (await ClienteServicio.ObtenerTodosAsync(incluirInactivos)).ToList();
+    }
+
+    private async Task BuscarAsync()
+    {
+        clientes = (await ClienteServicio.BuscarAsync(criterioBusqueda, incluirInactivos)).ToList();
+    }
+
+    private async Task GuardarAsync()
+    {
+        procesando = true;
+        mensaje = null;
+
+        var entidad = new Cliente
+        {
+            IdCliente = formulario.IdCliente,
+            Nombres = formulario.Nombres,
+            Apellidos = formulario.Apellidos,
+            TipoDocumento = formulario.TipoDocumento,
+            NumeroDocumento = formulario.NumeroDocumento,
+            Telefono = formulario.Telefono,
+            Email = formulario.Email,
+            Direccion = formulario.Direccion,
+            Activo = formulario.Activo
+        };
+
+        var resultado = await ClienteServicio.GuardarAsync(entidad);
+        mensaje = resultado.Mensaje;
+        operacionExitosa = resultado.Exitoso;
+
+        if (resultado.Exitoso)
+        {
+            LimpiarFormulario();
+            await BuscarAsync();
+        }
+
+        procesando = false;
+    }
+
+    private async Task EditarAsync(int id)
+    {
+        var cliente = await ClienteServicio.ObtenerPorIdAsync(id);
+        if (cliente is null)
+        {
+            mensaje = "No se encontró el cliente.";
+            operacionExitosa = false;
+            return;
+        }
+
+        formulario = new ClienteForm
+        {
+            IdCliente = cliente.IdCliente,
+            Nombres = cliente.Nombres,
+            Apellidos = cliente.Apellidos,
+            TipoDocumento = cliente.TipoDocumento,
+            NumeroDocumento = cliente.NumeroDocumento,
+            Telefono = cliente.Telefono,
+            Email = cliente.Email,
+            Direccion = cliente.Direccion,
+            Activo = cliente.Activo
+        };
+    }
+
+    private async Task ActivarAsync(int id)
+    {
+        var resultado = await ClienteServicio.ActivarAsync(id);
+        mensaje = resultado.Mensaje;
+        operacionExitosa = resultado.Exitoso;
+        await BuscarAsync();
+    }
+
+    private async Task DesactivarAsync(int id)
+    {
+        var resultado = await ClienteServicio.DesactivarAsync(id);
+        mensaje = resultado.Mensaje;
+        operacionExitosa = resultado.Exitoso;
+        await BuscarAsync();
+    }
+
+    private void LimpiarFormulario()
+    {
+        formulario = new ClienteForm();
+    }
+
+    private sealed class ClienteForm
+    {
+        public int IdCliente { get; set; }
+
+        [Required(ErrorMessage = "Los nombres son obligatorios.")]
+        [StringLength(100, ErrorMessage = "Los nombres no pueden tener más de 100 caracteres.")]
+        public string Nombres { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Los apellidos son obligatorios.")]
+        [StringLength(100, ErrorMessage = "Los apellidos no pueden tener más de 100 caracteres.")]
+        public string Apellidos { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El tipo de documento es obligatorio.")]
+        [StringLength(20, ErrorMessage = "El tipo de documento no puede tener más de 20 caracteres.")]
+        public string TipoDocumento { get; set; } = "DNI";
+
+        [Required(ErrorMessage = "El número de documento es obligatorio.")]
+        [StringLength(30, ErrorMessage = "El número de documento no puede tener más de 30 caracteres.")]
+        public string NumeroDocumento { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "El teléfono no tiene un formato válido.")]
+        [StringLength(30, ErrorMessage = "El teléfono no puede tener más de 30 caracteres.")]
+        public string? Telefono { get; set; }
+
+        [EmailAddress(ErrorMessage = "El correo no tiene un formato válido.")]
+        [StringLength(150, ErrorMessage = "El correo no puede tener más de 150 caracteres.")]
+        public string? Email { get; set; }
+
+        [StringLength(250, ErrorMessage = "La dirección no puede tener más de 250 caracteres.")]
+        public string? Direccion { get; set; }
+
+        public bool Activo { get; set; } = true;
+    }
+}

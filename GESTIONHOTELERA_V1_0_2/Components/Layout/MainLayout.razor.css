@@ -1,0 +1,108 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f8f6ef;
+}
+
+main, .main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, #111111 0%, #2d2411 55%, #c99a2e 130%);
+    border-right: 1px solid rgba(201, 154, 46, 0.45);
+}
+
+.navbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2d6b8;
+    min-height: 3.7rem;
+    box-shadow: 0 5px 18px rgba(17, 17, 17, 0.05);
+}
+
+.navbar-brand {
+    color: #111111;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.user-chip {
+    border: 1px solid #e2d6b8;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    background: #fff8dd;
+    color: #111111;
+    font-weight: 600;
+}
+
+article.content {
+    max-width: 1400px;
+    width: 100%;
+}
+
+.footer-custom {
+    background: #ffffff;
+    border-top: 1px solid #e2d6b8;
+    color: #111111;
+}
+
+.footer-title, .footer-subtext {
+    color: #111111 !important;
+}
+
+@media (max-width: 640.98px) {
+    .navbar .container-fluid {
+        align-items: flex-start !important;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 270px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    article.content {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: #fff0bd;
+    color: #111111;
+    bottom: 0;
+    box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.20);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.75rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

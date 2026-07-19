@@ -1,0 +1,98 @@
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="Home">Hotel Walay</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Menú de navegación" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <AuthorizeView>
+            <Authorized Context="usuarioAutenticado">
+                <div class="nav-section-title">Operación</div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Home" Match="NavLinkMatch.All">Inicio</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="tipos-habitacion">Tipos de habitación</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="habitaciones">Habitaciones</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="clientes">Clientes</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="reservas">Reservas</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="limpiezas">Limpieza</NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="pagos">Pagos</NavLink>
+                </div>
+
+                <div class="nav-section-title">Administración y seguridad</div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="reportes">Reportes</NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Autenticación multifactor</NavLink>
+                </div>
+
+                <AuthorizeView Roles="Administrador">
+                    <Authorized Context="usuarioAdministrador">
+                        
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="Account/Register">Registrar empleados</NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="usuarios">Usuarios y roles</NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <div class="nav-item px-3">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="Account/Login?sesionCerrada=1" />
+                        <hr />
+                        <button type="submit" class="nav-link">Cerrar sesión</button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login">Iniciar sesión</NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

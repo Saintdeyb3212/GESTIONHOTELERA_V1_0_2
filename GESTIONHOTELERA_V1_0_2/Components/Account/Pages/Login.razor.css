@@ -1,0 +1,211 @@
+.login-upla-style {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(420px, 1fr);
+    background: #ffffff;
+}
+
+.login-hero-panel {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    background-image: url('/img/hotel-walay-wanka.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.login-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35) 0 1px, transparent 2px),
+        linear-gradient(115deg, rgba(11, 93, 120, 0.50) 0%, rgba(11, 93, 120, 0.25) 34%, transparent 34% 43%, rgba(229, 166, 73, 0.55) 43% 56%, transparent 56%),
+        linear-gradient(70deg, rgba(202, 119, 78, 0.55) 0 11%, transparent 11% 18%, rgba(21, 122, 145, 0.55) 18% 42%, transparent 42%),
+        rgba(255, 255, 255, 0.20);
+    background-size: 48px 48px, auto, auto, auto;
+    backdrop-filter: saturate(1.1);
+}
+
+.login-hero-overlay::before,
+.login-hero-overlay::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 32px solid rgba(29, 106, 135, 0.38);
+    width: 520px;
+    height: 520px;
+    left: -170px;
+    top: -70px;
+}
+
+.login-hero-overlay::after {
+    width: 680px;
+    height: 680px;
+    left: 130px;
+    top: 210px;
+    border-color: rgba(230, 172, 79, 0.30);
+}
+
+.login-hero-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 2rem;
+    color: #ffffff;
+    text-align: center;
+}
+
+.hero-text span {
+    display: block;
+    color: #ffffff;
+    font-size: clamp(1.25rem, 2vw, 2.1rem);
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.hero-text strong {
+    display: block;
+    color: #ffffff;
+    font-size: clamp(2rem, 4.1vw, 4.3rem);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.42);
+}
+
+.hero-bracket {
+    width: 70px;
+    height: 142px;
+    border-top: 7px solid rgba(255, 255, 255, 0.95);
+    border-bottom: 7px solid rgba(255, 255, 255, 0.95);
+}
+
+.hero-bracket-left {
+    border-left: 7px solid rgba(255, 255, 255, 0.95);
+    border-radius: 28px 0 0 28px;
+}
+
+.hero-bracket-right {
+    border-right: 7px solid rgba(255, 255, 255, 0.95);
+    border-radius: 0 28px 28px 0;
+}
+
+.login-form-panel {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.25rem;
+    background: #ffffff;
+}
+
+.login-box {
+    width: min(100%, 520px);
+    background: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 6px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+}
+
+.login-logo {
+    width: 82px;
+    height: 82px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #1677b8, #0b5d78);
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+}
+
+.login-title {
+    font-size: 1rem;
+    color: #212529;
+}
+
+.form-label {
+    color: #212529;
+    font-size: 0.96rem;
+    margin-bottom: 0.45rem;
+}
+
+.login-input {
+    height: 46px;
+    border-radius: 4px;
+    border: 1px solid #c7d3df;
+    background: #eaf2ff;
+    color: #111111;
+}
+
+.login-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.16rem rgba(13, 110, 253, 0.18);
+}
+
+.remember-line {
+    display: inline-flex;
+    align-items: center;
+    color: #222222;
+}
+
+.btn-login {
+    background: #0d86ff;
+    border: 1px solid #0d86ff;
+    color: #ffffff;
+    height: 42px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.btn-login:hover,
+.btn-login:focus {
+    background: #056fd6;
+    border-color: #056fd6;
+    color: #ffffff;
+}
+
+.forgot-link a {
+    color: #111111;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.forgot-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .login-upla-style {
+        grid-template-columns: 1fr;
+    }
+
+    .login-hero-panel {
+        min-height: 35vh;
+    }
+
+    .login-hero-content {
+        min-height: 35vh;
+    }
+
+    .login-form-panel {
+        min-height: 65vh;
+        padding: 1.25rem;
+    }
+
+    .login-box {
+        padding: 1.5rem;
+    }
+
+    .hero-bracket {
+        display: none;
+    }
+}

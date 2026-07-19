@@ -1,0 +1,96 @@
+@page "/Account/LoginWithRecoveryCode"
+@layout GESTIONHOTELERA_V1_0_2.Components.Layout.LoginLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using GESTIONHOTELERA_V1_0_2.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<LoginWithRecoveryCode> Logger
+
+<PageTitle>Verificación con código de recuperación</PageTitle>
+
+<h1>Verificación con código de recuperación</h1>
+<hr />
+<StatusMessage Message="@message" />
+<p>
+    Ha solicitado iniciar sesion con un codigo de recuperacion. Este acceso no se recordara
+    hasta que vuelva a iniciar sesion con el codigo del autenticador o desactive la autenticacion multifactor.
+</p>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
+                <label for="Input.RecoveryCode" class="form-label">Código de recuperación</label>
+                <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesión</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private ApplicationUser user = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            RedirectManager.RedirectTo("Home");
+        }
+
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+        if (user is null)
+        {
+            RedirectManager.RedirectTo("Account/Login");
+        }
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        var recoveryCode = Input.RecoveryCode.Replace(" ", string.Empty);
+
+        var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+
+        var userId = await UserManager.GetUserIdAsync(user);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
+            RedirectManager.RedirectTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "Home" : ReturnUrl);
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            Logger.LogWarning("Invalid recovery code entered for user with ID '{UserId}' ", userId);
+            message = "Error: el codigo de recuperacion no es valido.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "Código de recuperación")]
+        public string RecoveryCode { get; set; } = "";
+    }
+}

@@ -1,0 +1,349 @@
+@page "/reportes"
+@using GESTIONHOTELERA_V1_0_2.Aplication.SERVICIOS.MODELOS
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Administrador,Empleado")]
+@inject IReporteServicio ReporteServicio
+
+<PageTitle>Reportes</PageTitle>
+
+<h3>Reportes visuales</h3>
+<p class="text-muted">Indicadores de ingresos, reservas, ocupación, pagos, limpieza y clientes frecuentes.</p>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <EditForm Model="filtro" OnValidSubmit="GenerarReporteAsync">
+            <DataAnnotationsValidator />
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Fecha inicio</label>
+                    <InputDate class="form-control" @bind-Value="filtro.FechaInicio" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha fin</label>
+                    <InputDate class="form-control" @bind-Value="filtro.FechaFin" />
+                </div>
+                <div class="col-md-6 d-flex gap-2 flex-wrap">
+                    <button class="btn btn-primary" type="submit" disabled="@cargando">Generar</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="MesActualAsync" disabled="@cargando">Mes actual</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="UltimosTreintaDiasAsync" disabled="@cargando">Últimos 30 días</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="AnioActualAsync" disabled="@cargando">Año actual</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(mensajeError))
+{
+    <div class="alert alert-danger">@mensajeError</div>
+}
+
+@if (cargando)
+{
+    <div class="alert alert-info">Generando reporte...</div>
+}
+else if (reporte is not null)
+{
+    <div class="alert alert-light border d-flex justify-content-between flex-wrap gap-2">
+        <span><strong>Periodo:</strong> @reporte.FechaInicio.ToString("dd/MM/yyyy") - @reporte.FechaFin.ToString("dd/MM/yyyy")</span>
+        <span><strong>Reservas analizadas:</strong> @reporte.TotalReservas</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @TarjetaIndicador("Ganancias", FormatoMoneda(reporte.Ganancias), "Pagos registrados en el periodo")
+        @TarjetaIndicador("Total reservado", FormatoMoneda(reporte.TotalEstimadoReservas), "Reservas no canceladas")
+        @TarjetaIndicador("Saldo pendiente", FormatoMoneda(reporte.SaldoPendiente), "Total reservado menos pagos")
+        @TarjetaIndicador("Ticket promedio", FormatoMoneda(reporte.TicketPromedio), "Promedio por reserva")
+    </div>
+
+    <div class="row g-3 mb-4">
+        @TarjetaIndicador("Completadas", reporte.ReservasCompletadas.ToString(), $"{reporte.PorcentajeCompletadas}% del total")
+        @TarjetaIndicador("Canceladas", reporte.ReservasCanceladas.ToString(), $"{reporte.PorcentajeCancelacion}% del total")
+        @TarjetaIndicador("Pendientes", reporte.ReservasPendientes.ToString(), "Reservas por confirmar")
+        @TarjetaIndicador("Check-in", reporte.ReservasCheckIn.ToString(), "Reservas actualmente alojadas")
+    </div>
+
+    <div class="row g-3 mb-4">
+        @TarjetaIndicador("Disponibles", reporte.HabitacionesDisponibles.ToString(), "Habitaciones listas")
+        @TarjetaIndicador("Reservadas", reporte.HabitacionesReservadas.ToString(), "Bloqueadas por reserva")
+        @TarjetaIndicador("Ocupadas", reporte.HabitacionesOcupadas.ToString(), "Con huésped en hotel")
+        @TarjetaIndicador("Ocupación actual", $"{reporte.PorcentajeOcupacionActual}%", "Reservadas + ocupadas")
+    </div>
+
+    <div class="row g-3 mb-4">
+        @TarjetaIndicador("Pendiente limpieza", reporte.HabitacionesPendientesLimpieza.ToString(), "No disponibles para reservar")
+        @TarjetaIndicador("En limpieza", reporte.HabitacionesEnLimpieza.ToString(), "Proceso operativo")
+        @TarjetaIndicador("Mantenimiento", reporte.HabitacionesMantenimiento.ToString(), "Fuera de operación")
+        @TarjetaIndicador("Limpiezas finalizadas", reporte.LimpiezasFinalizadas.ToString(), "Finalizadas en el periodo")
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Ingresos por método de pago</div>
+                <div class="card-body">
+                    @if (reporte.IngresosPorMetodoPago.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay pagos registrados en el periodo.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Método</th><th class="text-end">Pagos</th><th class="text-end">Total</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.IngresosPorMetodoPago)
+                                {
+                                    <tr>
+                                        <td>@item.MetodoPago</td>
+                                        <td class="text-end">@item.CantidadPagos</td>
+                                        <td class="text-end">@FormatoMoneda(item.Total)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Reservas por estado</div>
+                <div class="card-body">
+                    @if (reporte.ReservasPorEstado.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay reservas registradas en el periodo.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Estado</th><th class="text-end">Cantidad</th><th>Visual</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.ReservasPorEstado)
+                                {
+                                    <tr>
+                                        <td>@item.Estado</td>
+                                        <td class="text-end">@item.Cantidad</td>
+                                        <td><div class="progress"><div class="progress-bar" style="width:@PorcentajeCss(item.Cantidad, reporte.TotalReservas)">@Porcentaje(item.Cantidad, reporte.TotalReservas)%</div></div></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Habitaciones más reservadas</div>
+                <div class="card-body">
+                    @if (reporte.HabitacionesMasReservadas.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay habitaciones reservadas en el periodo.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Habitación</th><th>Tipo</th><th class="text-end">Reservas</th><th class="text-end">Generado</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.HabitacionesMasReservadas)
+                                {
+                                    <tr>
+                                        <td>@item.NumeroHabitacion</td>
+                                        <td>@item.TipoHabitacion</td>
+                                        <td class="text-end">@item.CantidadReservas</td>
+                                        <td class="text-end">@FormatoMoneda(item.TotalGenerado)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Clientes frecuentes</div>
+                <div class="card-body">
+                    @if (reporte.ClientesFrecuentes.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay clientes frecuentes en el periodo.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Cliente</th><th>Documento</th><th class="text-end">Reservas</th><th class="text-end">Total</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.ClientesFrecuentes)
+                                {
+                                    <tr>
+                                        <td>@item.Cliente</td>
+                                        <td>@item.Documento</td>
+                                        <td class="text-end">@item.CantidadReservas</td>
+                                        <td class="text-end">@FormatoMoneda(item.TotalReservado)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Ingresos diarios</div>
+                <div class="card-body">
+                    @if (reporte.IngresosDiarios.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay ingresos diarios para mostrar.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Fecha</th><th class="text-end">Pagos</th><th class="text-end">Total</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.IngresosDiarios)
+                                {
+                                    <tr>
+                                        <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-end">@item.CantidadPagos</td>
+                                        <td class="text-end">@FormatoMoneda(item.Total)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Ocupación por tipo de habitación</div>
+                <div class="card-body">
+                    @if (reporte.OcupacionPorTipoHabitacion.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No hay ocupación por tipo en el periodo.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Tipo</th><th class="text-end">Reservas</th><th class="text-end">Generado</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in reporte.OcupacionPorTipoHabitacion)
+                                {
+                                    <tr>
+                                        <td>@item.TipoHabitacion</td>
+                                        <td class="text-end">@item.CantidadReservas</td>
+                                        <td class="text-end">@FormatoMoneda(item.TotalGenerado)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly ReporteFiltro filtro = new();
+    private ReporteHoteleroDetalle? reporte;
+    private string? mensajeError;
+    private bool cargando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hoy = DateTime.Today;
+        filtro.FechaInicio = new DateTime(hoy.Year, hoy.Month, 1);
+        filtro.FechaFin = hoy;
+        await GenerarReporteAsync();
+    }
+
+    private async Task MesActualAsync()
+    {
+        var hoy = DateTime.Today;
+        filtro.FechaInicio = new DateTime(hoy.Year, hoy.Month, 1);
+        filtro.FechaFin = hoy;
+        await GenerarReporteAsync();
+    }
+
+    private async Task UltimosTreintaDiasAsync()
+    {
+        filtro.FechaInicio = DateTime.Today.AddDays(-30);
+        filtro.FechaFin = DateTime.Today;
+        await GenerarReporteAsync();
+    }
+
+    private async Task AnioActualAsync()
+    {
+        var hoy = DateTime.Today;
+        filtro.FechaInicio = new DateTime(hoy.Year, 1, 1);
+        filtro.FechaFin = hoy;
+        await GenerarReporteAsync();
+    }
+
+    private async Task GenerarReporteAsync()
+    {
+        mensajeError = null;
+
+        if (filtro.FechaFin < filtro.FechaInicio)
+        {
+            mensajeError = "La fecha fin no puede ser menor que la fecha inicio.";
+            return;
+        }
+
+        cargando = true;
+        try
+        {
+            reporte = await ReporteServicio.GenerarReporteAsync(filtro.FechaInicio, filtro.FechaFin);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo generar el reporte: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+
+    private static RenderFragment TarjetaIndicador(string titulo, string valor, string detalle) => @<div class="col-md-6 col-xl-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">@titulo</div>
+                <div class="fs-4 fw-bold">@valor</div>
+                <div class="text-muted small">@detalle</div>
+            </div>
+        </div>
+    </div>;
+
+    private static string FormatoMoneda(decimal monto) => $"S/. {monto:N2}";
+
+    private static decimal Porcentaje(int cantidad, int total)
+    {
+        return total <= 0 ? 0m : Math.Round(cantidad * 100m / total, 2);
+    }
+
+    private static string PorcentajeCss(int cantidad, int total)
+    {
+        var porcentaje = Porcentaje(cantidad, total);
+        return $"{porcentaje.ToString(System.Globalization.CultureInfo.InvariantCulture)}%";
+    }
+
+    private sealed class ReporteFiltro
+    {
+        [Required]
+        public DateTime FechaInicio { get; set; }
+
+        [Required]
+        public DateTime FechaFin { get; set; }
+    }
+}

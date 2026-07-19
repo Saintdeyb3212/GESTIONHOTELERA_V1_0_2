@@ -1,0 +1,73 @@
+@page "/Home"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Inicio</PageTitle>
+
+<AuthorizeView>
+    <Authorized Context="usuarioActual">
+        <section class="home-hero mb-4">
+            <span class="home-pill">Sistema hotelero peruano</span>
+            <h1 class="display-6 mt-3 mb-3">Bienvenido al sistema de Gestión Hotelera</h1>
+            <p class="lead mb-2">
+                Hola, <strong>@usuarioActual.User.Identity?.Name</strong>. Desde este panel podrá gestionar la operación diaria del hotel de forma ordenada, segura y profesional.
+            </p>
+            <p class="mb-0">
+                El sistema está configurado para trabajar en idioma español y con moneda peruana: <strong>S/. soles</strong>.
+            </p>
+        </section>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="card home-module h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Reservas</h5>
+                        <p class="card-text">Registre, edite y controle reservas, fechas de ingreso, salida y estado de atención.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card home-module h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Habitaciones</h5>
+                        <p class="card-text">Administre tipos de habitación, disponibilidad, ocupación y mantenimiento.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card home-module h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Clientes</h5>
+                        <p class="card-text">Mantenga información de huéspedes con documentos usados en Perú como DNI, CE, pasaporte o RUC.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card home-module h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Pagos</h5>
+                        <p class="card-text">Registre pagos y saldos usando moneda peruana: <strong>S/.</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Recomendación operativa</div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Use el menú lateral para ingresar a cada módulo. Las opciones administrativas, como registro de empleados, usuarios, roles y acceso multifactor, solo deben estar disponibles para cuentas con rol Administrador.
+                </p>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <section class="home-hero login-wrapper">
+            <div class="text-center">
+                <span class="home-pill">Gestión Hotelera Perú</span>
+                <h1 class="display-6 mt-3">Bienvenido</h1>
+                <p class="lead">Ingrese con su cuenta autorizada para acceder al sistema.</p>
+                <a class="btn btn-primary btn-lg" href="Account/Login">Iniciar sesión</a>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>

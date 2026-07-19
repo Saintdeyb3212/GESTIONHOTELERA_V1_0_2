@@ -1,0 +1,708 @@
+
+* {
+    box-sizing: border-box;
+}
+
+.twofa-page {
+    --gold-100: #fff8df;
+    --gold-200: #f9e8a6;
+    --gold-300: #f2cf65;
+    --gold-400: #dcae38;
+    --gold-500: #bd851a;
+    --gold-600: #94610e;
+    --ink-950: #0b0b0b;
+    --ink-900: #121212;
+    --ink-800: #1d1d1d;
+    --ink-700: #333333;
+    --cream-50: #fffdf8;
+    --cream-100: #fbf7ee;
+    --line: #ead8aa;
+    --shadow: 0 24px 75px rgba(22, 17, 8, 0.16);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(360px, 38%) minmax(0, 62%);
+    overflow: hidden;
+    background: var(--cream-100);
+    color: var(--ink-900);
+}
+
+.twofa-brand {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(2rem, 4vw, 4.25rem) clamp(2rem, 4vw, 4.5rem);
+    color: #fff;
+    background: radial-gradient(circle at 50% 46%, rgba(224, 172, 61, 0.13), transparent 35%), radial-gradient(circle at 20% 75%, rgba(243, 208, 109, 0.08), transparent 26%), linear-gradient(145deg, #090909 0%, #171717 46%, #080808 100%);
+}
+
+.brand-pattern {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.24;
+    background-image: linear-gradient(30deg, transparent 74%, rgba(213, 164, 45, 0.42) 75%, transparent 76%), linear-gradient(150deg, transparent 74%, rgba(213, 164, 45, 0.34) 75%, transparent 76%);
+    background-size: 84px 146px;
+    mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.4) 42%, transparent 80%);
+}
+
+.brand-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+}
+
+.brand-monogram {
+    position: relative;
+    width: 96px;
+    margin: 0 auto 0.6rem;
+    color: var(--gold-300);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 3.4rem;
+    line-height: 1;
+    letter-spacing: -0.14em;
+    text-shadow: 0 8px 30px rgba(219, 169, 45, 0.25);
+}
+
+    .brand-monogram span {
+        color: inherit;
+    }
+
+.brand-crown {
+    position: absolute;
+    top: -1.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.45rem;
+    letter-spacing: 0;
+}
+
+.brand-header h2 {
+    margin: 0;
+    color: var(--gold-300);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+    font-weight: 600;
+}
+
+.brand-header p {
+    margin: 0.5rem 0 0;
+    color: #d7b75f;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+}
+
+.security-visual {
+    position: relative;
+    min-height: 390px;
+    display: grid;
+    place-items: center;
+    margin: 1rem 0;
+}
+
+.shield-stage {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: min(78%, 340px);
+}
+
+.shield-graphic {
+    width: min(100%, 270px);
+    height: auto;
+    filter: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.45));
+}
+
+.stage-base {
+    width: min(100%, 310px);
+    height: 42px;
+    margin-top: -14px;
+    border: 2px solid rgba(240, 199, 90, 0.55);
+    border-radius: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.65)), #171717;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55), inset 0 4px 7px rgba(255, 255, 255, 0.12);
+}
+
+.orbit {
+    position: absolute;
+    z-index: 1;
+    width: 70%;
+    max-width: 420px;
+    height: 116px;
+    border: 1.5px solid rgba(236, 190, 67, 0.75);
+    border-radius: 50%;
+    box-shadow: 0 0 18px rgba(221, 168, 38, 0.18);
+}
+
+.orbit-one {
+    transform: rotate(-15deg);
+}
+
+.orbit-two {
+    transform: rotate(19deg) scaleX(0.88);
+    opacity: 0.5;
+}
+
+.spark {
+    position: absolute;
+    z-index: 2;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ffe28d;
+    box-shadow: 0 0 18px 7px rgba(232, 178, 49, 0.45);
+}
+
+.spark-one {
+    left: 20%;
+    top: 48%;
+}
+
+.spark-two {
+    right: 18%;
+    top: 37%;
+    width: 4px;
+    height: 4px;
+}
+
+.spark-three {
+    right: 27%;
+    bottom: 25%;
+    width: 3px;
+    height: 3px;
+}
+
+.brand-footer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    max-width: 430px;
+    margin: 0 auto;
+}
+
+.mini-shield {
+    width: 30px;
+    min-width: 30px;
+    color: var(--gold-300);
+}
+
+    .mini-shield svg,
+    .page-security-note svg {
+        width: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+.brand-footer strong {
+    color: #ffffff;
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
+.brand-footer p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.86rem;
+    line-height: 1.65;
+}
+
+.twofa-content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.15rem;
+    padding: clamp(1.25rem, 4vw, 4.5rem);
+    background: radial-gradient(circle at 80% 8%, rgba(233, 190, 71, 0.12), transparent 27%), linear-gradient(135deg, #fffefa 0%, #f8f4eb 100%);
+}
+
+.twofa-card {
+    width: min(100%, 820px);
+    padding: clamp(2rem, 4vw, 4.2rem) clamp(1.5rem, 5vw, 5.7rem) clamp(2rem, 4vw, 3.5rem);
+    border: 1px solid rgba(199, 157, 58, 0.14);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+}
+
+.card-brand {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+}
+
+.hotel-mark {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    color: var(--gold-500);
+}
+
+    .hotel-mark svg {
+        width: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+.card-brand-name,
+.card-brand-subtitle {
+    display: block;
+}
+
+.card-brand-name {
+    color: var(--ink-900);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.55rem, 2.2vw, 2.15rem);
+    line-height: 1.05;
+}
+
+.card-brand-subtitle {
+    margin-top: 0.35rem;
+    color: var(--gold-500);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1rem;
+}
+
+.card-separator {
+    height: 1px;
+    margin: 1.55rem 0 2.2rem;
+    background: linear-gradient(to right, transparent, var(--gold-400) 12%, var(--gold-400) 88%, transparent);
+    opacity: 0.65;
+}
+
+.twofa-heading {
+    display: flex;
+    align-items: center;
+    gap: 1.3rem;
+    margin-bottom: 1.45rem;
+}
+
+.heading-icon {
+    width: 66px;
+    height: 66px;
+    min-width: 66px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    color: var(--gold-500);
+    background: linear-gradient(145deg, #fff8df, #fbf0cf);
+    box-shadow: inset 0 0 0 1px rgba(210, 166, 57, 0.08);
+}
+
+    .heading-icon svg {
+        width: 36px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+.twofa-heading h1 {
+    margin: 0;
+    color: var(--ink-900);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.75rem, 3vw, 2.65rem);
+    font-weight: 700;
+    line-height: 1.12;
+}
+
+.heading-accent {
+    display: block;
+    width: 46px;
+    height: 3px;
+    margin-top: 0.85rem;
+    border-radius: 10px;
+    background: var(--gold-500);
+}
+
+.twofa-description {
+    margin: 0 0 1.75rem 79px;
+    color: #464646;
+    font-size: 1rem;
+    line-height: 1.65;
+}
+
+.twofa-form {
+    display: block;
+    width: 100%;
+}
+
+/* El borde y el tamano visual pertenecen al contenedor para que el campo
+   conserve el formato aunque InputText sea un componente de Blazor. */
+.code-field-wrap {
+    width: 100%;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0 1.2rem;
+    overflow: hidden;
+    border: 1.5px solid #d2a342;
+    border-radius: 11px;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+    .code-field-wrap:hover {
+        border-color: var(--gold-500);
+    }
+
+    .code-field-wrap:focus-within {
+        border-color: var(--gold-500);
+        background: #fffdf8;
+        box-shadow: 0 0 0 4px rgba(211, 164, 50, 0.15);
+    }
+
+.field-icon {
+    position: static;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-500);
+    pointer-events: none;
+}
+
+    .field-icon svg,
+    .submit-icon svg {
+        width: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+/* ::deep es necesario porque InputText renderiza el input como componente hijo. */
+.code-field-wrap ::deep .code-input {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 62px;
+    padding: 0;
+    margin: 0;
+    border: 0 !important;
+    border-radius: 0;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--ink-900);
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+}
+
+    .code-field-wrap ::deep .code-input::placeholder {
+        color: #8a8a8a;
+        opacity: 1;
+        letter-spacing: 0;
+    }
+
+    .code-field-wrap ::deep .code-input:focus,
+    .code-field-wrap ::deep .code-input:active {
+        border: 0 !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+    }
+
+.field-validation,
+.validation-summary {
+    display: block;
+    margin-top: 0.5rem;
+    color: #b42318;
+    font-size: 0.86rem;
+}
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 1.15rem;
+    }
+
+.remember-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.35rem 0;
+    color: #303030;
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-checkbox {
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    border: 1px solid #a9a9a9;
+    border-radius: 4px;
+    accent-color: var(--gold-500);
+}
+
+.twofa-submit {
+    width: 100%;
+    min-height: 62px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    border: 1px solid #d3a02b;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f6d86c 0%, #d5a12d 72%, #c18c19 100%);
+    color: #17120a;
+    font-size: 1.05rem;
+    font-weight: 800;
+    box-shadow: 0 10px 24px rgba(190, 137, 18, 0.22);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+    .twofa-submit:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+        box-shadow: 0 14px 30px rgba(190, 137, 18, 0.28);
+    }
+
+    .twofa-submit:focus-visible {
+        outline: 3px solid rgba(191, 135, 22, 0.3);
+        outline-offset: 3px;
+    }
+
+    .twofa-submit:active {
+        transform: translateY(0);
+    }
+
+.submit-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.recovery-divider {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.2rem;
+}
+
+    .recovery-divider > span {
+        height: 1px;
+        background: #ece5d7;
+    }
+
+    .recovery-divider div {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        color: #d6ccb7;
+    }
+
+    .recovery-divider svg {
+        width: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6;
+    }
+
+.recovery-help {
+    margin: 0;
+    color: #383838;
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+    .recovery-help a {
+        color: var(--gold-600);
+        font-weight: 700;
+        text-decoration-color: rgba(148, 97, 14, 0.55);
+        text-underline-offset: 3px;
+    }
+
+        .recovery-help a:hover {
+            color: #694207;
+        }
+
+.page-security-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    color: #716956;
+    font-size: 0.82rem;
+}
+
+    .page-security-note svg {
+        width: 17px;
+    }
+
+@media (max-width: 1100px) {
+    .twofa-page {
+        grid-template-columns: minmax(300px, 34%) minmax(0, 66%);
+    }
+
+    .twofa-brand {
+        padding: 2.25rem 1.5rem;
+    }
+
+    .security-visual {
+        min-height: 330px;
+    }
+
+    .twofa-card {
+        padding-inline: clamp(1.5rem, 4vw, 3.3rem);
+    }
+}
+
+@media (max-width: 820px) {
+    .twofa-page {
+        display: block;
+        overflow: visible;
+    }
+
+    .twofa-brand {
+        min-height: auto;
+        padding: 2.2rem 1.25rem 2.6rem;
+    }
+
+    .security-visual {
+        min-height: 250px;
+        margin: 0.35rem 0 1rem;
+    }
+
+    .shield-stage {
+        width: 230px;
+    }
+
+    .shield-graphic {
+        width: 180px;
+    }
+
+    .stage-base {
+        width: 220px;
+        height: 30px;
+    }
+
+    .orbit {
+        width: 290px;
+        height: 90px;
+    }
+
+    .brand-footer {
+        justify-content: center;
+    }
+
+    .twofa-content {
+        min-height: auto;
+        padding: 1.25rem;
+    }
+
+    .twofa-card {
+        margin-top: -2.5rem;
+        border-radius: 22px;
+    }
+}
+
+@media (max-width: 560px) {
+    .brand-header p {
+        letter-spacing: 0.11em;
+    }
+
+    .brand-footer {
+        display: none;
+    }
+
+    .twofa-card {
+        padding: 1.55rem 1.2rem 1.7rem;
+        border-radius: 18px;
+    }
+
+    .card-brand {
+        gap: 0.75rem;
+    }
+
+    .hotel-mark {
+        width: 44px;
+        height: 44px;
+    }
+
+    .card-brand-name {
+        font-size: 1.35rem;
+    }
+
+    .card-brand-subtitle {
+        font-size: 0.86rem;
+    }
+
+    .card-separator {
+        margin: 1.25rem 0 1.55rem;
+    }
+
+    .twofa-heading {
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .heading-icon {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        border-radius: 12px;
+    }
+
+        .heading-icon svg {
+            width: 28px;
+        }
+
+    .twofa-heading h1 {
+        font-size: 1.65rem;
+    }
+
+    .twofa-description {
+        margin-left: 0;
+        font-size: 0.94rem;
+    }
+
+    .code-field-wrap {
+        min-height: 58px;
+    }
+
+        .code-field-wrap ::deep .code-input {
+            height: 56px;
+        }
+
+    .twofa-submit {
+        min-height: 57px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .code-field-wrap,
+    .code-field-wrap ::deep .code-input,
+    .twofa-submit {
+        transition: none;
+    }
+}

@@ -1,0 +1,120 @@
+.navbar-toggler {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem rgba(255, 255, 255, 0.12);
+}
+
+.navbar-toggler:checked {
+    background-color: rgba(201, 154, 46, 0.75);
+}
+
+.top-row {
+    min-height: 3.7rem;
+    background: #111111;
+    border-bottom: 1px solid rgba(201, 154, 46, 0.5);
+}
+
+.navbar-brand {
+    font-size: 1.05rem;
+    color: #ffffff !important;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.navbar-brand::after {
+    content: " Perú";
+    color: #f3d77a;
+    font-weight: 700;
+}
+
+.nav-item {
+    font-size: 0.94rem;
+    padding-bottom: 0.35rem;
+}
+
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
+
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
+
+.nav-item ::deep .nav-link, .nav-item button.nav-link {
+    color: #ffffff !important;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    min-height: 2.8rem;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.nav-item ::deep a.active {
+    background: linear-gradient(90deg, rgba(201, 154, 46, 0.95), rgba(243, 215, 122, 0.45));
+    color: #ffffff !important;
+    box-shadow: inset 4px 0 0 #ffffff;
+}
+
+.nav-item ::deep .nav-link:hover, .nav-item button.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff !important;
+}
+
+.nav-scrollable {
+    display: none;
+}
+
+.navbar-toggler:checked ~ .nav-scrollable {
+    display: block;
+}
+
+hr {
+    border-color: rgba(255, 255, 255, 0.25);
+    opacity: 1;
+}
+
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .nav-scrollable {
+        display: block;
+        height: calc(100vh - 3.7rem);
+        overflow-y: auto;
+        padding-top: 0.5rem;
+    }
+}
+
+/* Secciones visuales del menú lateral */
+.nav-section-title {
+    color: #f3d77a;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1rem 1.25rem 0.45rem;
+}
+
+.nav-item ::deep .nav-link,
+.nav-item button.nav-link {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item ::deep .nav-link:hover,
+.nav-item button.nav-link:hover {
+    transform: translateX(2px);
+}

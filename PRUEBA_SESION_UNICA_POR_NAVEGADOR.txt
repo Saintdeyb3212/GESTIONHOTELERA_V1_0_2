@@ -1,0 +1,13 @@
+PRUEBA DE SESION UNICA POR NAVEGADOR
+
+1. Abra Chrome e inicie sesion como empleado.
+2. Abra otra pestana del mismo perfil de Chrome y escriba /Account/Login.
+3. El formulario de acceso no debe mostrarse: debe cargar la sesion del empleado.
+4. La pestana nueva queda activa. La anterior se cierra si el navegador lo permite o muestra la pagina "La sesion continua en otra pestana".
+5. Cierre sesion desde la pestana activa. La cookie de ese navegador se elimina y el sistema vuelve al login.
+6. Inicie sesion con cualquier usuario valido.
+7. Compruebe que un telefono, Edge, modo incognito u otro perfil de Chrome conservan sus propias sesiones independientes.
+8. Para una cuenta con 2FA, la pantalla del codigo debe mostrarse sin menu lateral y sin acceso a modulos hasta validar el codigo.
+
+NOTA TECNICA
+Los navegadores no permiten cerrar por codigo una pestana que el usuario abrio manualmente. Por eso el sistema intenta cerrarla y, si el navegador lo bloquea, la desactiva y la envia a una pagina neutral. La cookie de autenticacion sigue siendo unica para el navegador/perfil.

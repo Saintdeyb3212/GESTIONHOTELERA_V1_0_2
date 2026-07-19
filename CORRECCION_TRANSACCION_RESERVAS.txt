@@ -1,0 +1,14 @@
+CORRECCION REALIZADA
+
+Se corrigio ReservaServicio.cs para que las transacciones manuales de:
+- CrearReservaAsync
+- ActualizarReservaAsync
+
+se ejecuten dentro de Database.CreateExecutionStrategy().ExecuteAsync(...).
+
+Esto evita el error:
+"SqlServerRetryingExecutionStrategy does not support user-initiated transactions".
+
+Tambien se crea un DbContext nuevo en cada intento, evitando reutilizar entidades rastreadas cuando Azure SQL realiza un reintento.
+
+No se elimino EnableRetryOnFailure porque es util para Azure SQL.

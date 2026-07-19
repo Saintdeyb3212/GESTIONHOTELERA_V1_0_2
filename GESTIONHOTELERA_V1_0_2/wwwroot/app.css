@@ -1,0 +1,274 @@
+:root {
+    --hotel-negro: #111111;
+    --hotel-dorado: #c99a2e;
+    --hotel-dorado-claro: #f3d77a;
+    --hotel-amarillo: #ffe08a;
+    --hotel-blanco: #ffffff;
+    --hotel-fondo: #f8f6ef;
+    --hotel-borde: #e2d6b8;
+}
+
+html, body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--hotel-fondo);
+    color: var(--hotel-negro);
+}
+
+body, p, span, label, small, td, th, li, div, input, select, textarea {
+    color: var(--hotel-negro);
+}
+
+a, .btn-link {
+    color: #7a570e;
+    font-weight: 600;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--hotel-negro);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--hotel-negro);
+    font-weight: 700;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.card {
+    background: var(--hotel-blanco);
+    border: 1px solid var(--hotel-borde);
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(17, 17, 17, 0.08);
+}
+
+.card-header {
+    background: linear-gradient(90deg, #fff7dc 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--hotel-borde);
+    color: var(--hotel-negro);
+    font-weight: 700;
+}
+
+.table {
+    --bs-table-color: var(--hotel-negro);
+    --bs-table-striped-color: var(--hotel-negro);
+    --bs-table-hover-color: var(--hotel-negro);
+    border-color: var(--hotel-borde);
+}
+
+.table thead th {
+    background: #fff4c7;
+    color: var(--hotel-negro);
+    border-bottom: 1px solid var(--hotel-borde);
+}
+
+.form-control, .form-select {
+    color: var(--hotel-negro);
+    border-color: #cfc2a1;
+    border-radius: 10px;
+}
+
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+    border-color: var(--hotel-dorado);
+    box-shadow: 0 0 0 0.18rem rgba(201, 154, 46, 0.25);
+}
+
+.btn-primary {
+    color: var(--hotel-negro);
+    background: linear-gradient(135deg, var(--hotel-dorado-claro), var(--hotel-dorado));
+    border-color: #b8861e;
+    font-weight: 700;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    color: var(--hotel-negro);
+    background: linear-gradient(135deg, #ffe694, #b8861e);
+    border-color: #8a6418;
+}
+
+.btn-outline-primary {
+    color: var(--hotel-negro);
+    border-color: var(--hotel-dorado);
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    color: var(--hotel-negro);
+    background: var(--hotel-dorado-claro);
+    border-color: var(--hotel-dorado);
+}
+
+.btn-outline-secondary {
+    color: var(--hotel-negro);
+    border-color: #9c8b65;
+}
+
+.btn-outline-secondary:hover {
+    color: var(--hotel-negro);
+    background: #fff2bd;
+    border-color: var(--hotel-dorado);
+}
+
+.alert {
+    border-radius: 14px;
+}
+
+.alert-light, .alert-info {
+    color: var(--hotel-negro);
+    background: #fff8dd;
+    border-color: var(--hotel-borde);
+}
+
+.text-muted {
+    color: #222222 !important;
+}
+
+.badge {
+    font-weight: 700;
+}
+
+.progress {
+    background-color: #ede3c3;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--hotel-dorado), var(--hotel-negro));
+    color: var(--hotel-blanco);
+}
+
+.login-wrapper {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 520px;
+}
+
+.login-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--hotel-dorado-claro), var(--hotel-dorado));
+    border: 2px solid var(--hotel-negro);
+    color: var(--hotel-negro);
+    font-weight: 900;
+    font-size: 1.3rem;
+}
+
+.home-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #fff6d5 55%, #f3d77a 100%);
+    border: 1px solid var(--hotel-borde);
+    border-radius: 22px;
+    padding: 2rem;
+    box-shadow: 0 16px 36px rgba(17, 17, 17, 0.10);
+}
+
+.home-pill {
+    display: inline-block;
+    background: var(--hotel-negro);
+    color: var(--hotel-blanco);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.home-pill * {
+    color: var(--hotel-blanco);
+}
+
+.home-module {
+    border-left: 5px solid var(--hotel-dorado);
+}
+
+.validation-message, .text-danger {
+    color: #b00020 !important;
+}
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem;
+    color: white;
+}
+
+.blazor-error-boundary::after {
+    content: "Ocurrió un error inesperado.";
+}
+
+.darker-border-checkbox.form-check-input {
+    border-color: #686868;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* Orden visual y microinteracciones del front-end */
+.content > h1,
+.content > h2,
+.content > h3 {
+    margin-bottom: 0.35rem;
+}
+
+.content > p.text-muted {
+    margin-bottom: 1.35rem;
+    max-width: 980px;
+}
+
+.card,
+.alert {
+    animation: hotelFadeUp 0.35s ease both;
+}
+
+.table tbody tr,
+.btn,
+.form-control,
+.form-select,
+.form-check-input {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.card:hover {
+    box-shadow: 0 14px 34px rgba(17, 17, 17, 0.12);
+}
+
+.table tbody tr:hover {
+    background-color: #fff8dd;
+}
+
+@keyframes hotelFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,251 @@
+@page "/usuarios"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using GESTIONHOTELERA_V1_0_2.Data
+@attribute [Authorize(Roles = "Administrador,Empleado")]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Usuarios y roles</PageTitle>
+
+<h3>Usuarios y roles</h3>
+<p class="text-muted">Administra el acceso del personal. El rol Administrador no se asigna desde esta pantalla.</p>
+
+@if (!string.IsNullOrWhiteSpace(mensaje))
+{
+    <div class="alert @(operacionExitosa ? "alert-success" : "alert-danger")" role="alert">@mensaje</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Listado de usuarios</span>
+        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => CargarAsync()" disabled="@procesando">Actualizar</button>
+    </div>
+    <div class="card-body p-0">
+        @if (usuarios is null)
+        {
+            <p class="p-3 mb-0">Cargando usuarios...</p>
+        }
+        else if (!usuarios.Any())
+        {
+            <p class="p-3 mb-0">No se encontraron usuarios registrados.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Correo</th>
+                            <th>Roles actuales</th>
+                            <th>Nuevo rol</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in usuarios)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@usuario.Email</strong>
+                                    @if (usuario.EsUsuarioActual)
+                                    {
+                                        <br />
+                                        <small class="text-muted">Sesión actual</small>
+                                    }
+                                </td>
+                                <td>@string.Join(", ", usuario.Roles)</td>
+                                <td style="min-width: 180px;">
+                                    @if (usuario.EsAdministrador)
+                                    {
+                                        <span class="text-muted">Protegido</span>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-select form-select-sm" @bind="usuario.RolSeleccionado" disabled="@procesando">
+                                            <option value="Empleado">Empleado</option>
+                                            <option value="Recepcion">Recepción</option>
+                                            <option value="Limpieza">Limpieza</option>
+                                        </select>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(usuario.Activo ? "text-bg-success" : "text-bg-secondary")">@(usuario.Activo ? "Activo" : "Inactivo")</span>
+                                </td>
+                                <td class="text-end">
+                                    @if (usuario.EsAdministrador)
+                                    {
+                                        <span class="text-muted">Sin cambios</span>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1" @onclick="() => CambiarRolAsync(usuario)" disabled="@procesando">Guardar rol</button>
+                                        @if (usuario.Activo)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => CambiarEstadoAsync(usuario, false)" disabled="@(procesando || usuario.EsUsuarioActual)">Desactivar</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success" @onclick="() => CambiarEstadoAsync(usuario, true)" disabled="@procesando">Activar</button>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<UsuarioVista>? usuarios;
+    private string? mensaje;
+    private bool operacionExitosa;
+    private bool procesando;
+    private string? usuarioActualId;
+
+    private static readonly string[] RolesPermitidos = ["Empleado", "Recepcion", "Limpieza"];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var usuarioActual = await UserManager.GetUserAsync(authState.User);
+        usuarioActualId = usuarioActual?.Id;
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync(bool limpiarMensaje = true)
+    {
+        procesando = true;
+        if (limpiarMensaje)
+        {
+            mensaje = null;
+        }
+
+        var lista = new List<UsuarioVista>();
+        var users = await UserManager.Users.OrderBy(u => u.Email).ToListAsync();
+
+        foreach (var user in users)
+        {
+            var roles = (await UserManager.GetRolesAsync(user)).ToList();
+            var esAdmin = roles.Contains("Administrador");
+            var rolOperativo = roles.FirstOrDefault(r => RolesPermitidos.Contains(r)) ?? "Empleado";
+
+            lista.Add(new UsuarioVista
+            {
+                Id = user.Id,
+                Email = user.Email ?? user.UserName ?? "Sin correo",
+                Activo = user.Activo,
+                Roles = roles,
+                RolSeleccionado = rolOperativo,
+                EsAdministrador = esAdmin,
+                EsUsuarioActual = user.Id == usuarioActualId
+            });
+        }
+
+        usuarios = lista;
+        procesando = false;
+    }
+
+    private async Task CambiarRolAsync(UsuarioVista usuario)
+    {
+        if (usuario.EsAdministrador)
+        {
+            mensaje = "No se puede modificar el rol Administrador desde esta pantalla.";
+            operacionExitosa = false;
+            return;
+        }
+
+        if (!RolesPermitidos.Contains(usuario.RolSeleccionado))
+        {
+            mensaje = "El rol seleccionado no está permitido.";
+            operacionExitosa = false;
+            return;
+        }
+
+        procesando = true;
+        var user = await UserManager.FindByIdAsync(usuario.Id);
+        if (user is null)
+        {
+            mensaje = "No se encontró el usuario.";
+            operacionExitosa = false;
+            procesando = false;
+            return;
+        }
+
+        var rolesActuales = await UserManager.GetRolesAsync(user);
+        var rolesOperativosActuales = rolesActuales.Where(r => RolesPermitidos.Contains(r)).ToArray();
+
+        if (rolesOperativosActuales.Length > 0)
+        {
+            var removeResult = await UserManager.RemoveFromRolesAsync(user, rolesOperativosActuales);
+            if (!removeResult.Succeeded)
+            {
+                mensaje = $"No se pudo quitar el rol anterior: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}";
+                operacionExitosa = false;
+                procesando = false;
+                return;
+            }
+        }
+
+        var addResult = await UserManager.AddToRoleAsync(user, usuario.RolSeleccionado);
+        mensaje = addResult.Succeeded
+            ? "Rol actualizado correctamente."
+            : $"No se pudo asignar el nuevo rol: {string.Join(", ", addResult.Errors.Select(e => e.Description))}";
+        operacionExitosa = addResult.Succeeded;
+
+        await CargarAsync(limpiarMensaje: false);
+    }
+
+    private async Task CambiarEstadoAsync(UsuarioVista usuario, bool activo)
+    {
+        if (usuario.EsUsuarioActual && !activo)
+        {
+            mensaje = "No puede desactivar la cuenta con la que inició sesión.";
+            operacionExitosa = false;
+            return;
+        }
+
+        if (usuario.EsAdministrador)
+        {
+            mensaje = "No se puede desactivar una cuenta administradora desde esta pantalla.";
+            operacionExitosa = false;
+            return;
+        }
+
+        procesando = true;
+        var user = await UserManager.FindByIdAsync(usuario.Id);
+        if (user is null)
+        {
+            mensaje = "No se encontró el usuario.";
+            operacionExitosa = false;
+            procesando = false;
+            return;
+        }
+
+        user.Activo = activo;
+        var result = await UserManager.UpdateAsync(user);
+        mensaje = result.Succeeded
+            ? $"Usuario {(activo ? "activado" : "desactivado")} correctamente."
+            : $"No se pudo cambiar el estado: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+        operacionExitosa = result.Succeeded;
+
+        await CargarAsync(limpiarMensaje: false);
+    }
+
+    private sealed class UsuarioVista
+    {
+        public string Id { get; set; } = "";
+        public string Email { get; set; } = "";
+        public bool Activo { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+        public string RolSeleccionado { get; set; } = "Empleado";
+        public bool EsAdministrador { get; set; }
+        public bool EsUsuarioActual { get; set; }
+    }
+}

@@ -1,0 +1,40 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <aside class="sidebar">
+        <NavMenu />
+    </aside>
+
+    <main class="main-content d-flex flex-column">
+        <header class="navbar">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <span class="navbar-brand mb-0 h1">Gestión Hotelera</span>
+                <AuthorizeView>
+                    <Authorized Context="usuarioActual">
+                        <span class="user-chip">Usuario: @usuarioActual.User.Identity?.Name</span>
+                    </Authorized>
+                    <NotAuthorized>
+                        <span class="user-chip">Acceso seguro</span>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </header>
+
+        <article class="content px-4 mt-4">
+            @Body
+        </article>
+
+        <footer class="footer-custom mt-auto py-3 text-center">
+            <div class="footer-container">
+                <p class="footer-title mb-1">Gestión Hotelera &copy; 2026 - Perú</p>
+                <p class="footer-subtext mb-0">Sistema para reservas, habitaciones, pagos en S/. soles y limpieza.</p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Ocurrió un error inesperado.
+    <a href="." class="reload">Recargar</a>
+    <span class="dismiss">🗙</span>
+</div>
