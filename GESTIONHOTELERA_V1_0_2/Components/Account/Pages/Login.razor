@@ -38,18 +38,17 @@
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" role="alert" />
 
                 <div class="mb-3">
                     <label for="Input.Email" class="form-label">Correo electrónico</label>
                     <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control login-input" autocomplete="username" aria-required="true" placeholder="usuario@hotel.com" />
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    <ValidationMessage For="() => Input.Email" class="text-danger mt-1" style="font-size: 0.85em;" />
                 </div>
 
                 <div class="mb-3">
                     <label for="Input.Password" class="form-label">Contraseña</label>
                     <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control login-input" autocomplete="current-password" aria-required="true" placeholder="Ingrese su contraseña" />
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    <ValidationMessage For="() => Input.Password" class="text-danger mt-1" style="font-size: 0.85em;" />
                 </div>
 
                 <div class="mb-4">
@@ -117,13 +116,16 @@
         }
 
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
         if (result.Succeeded)
         {
-            Logger.LogInformation("Usuario autenticado correctamente.");
+            Logger.LogInformation("Usuario autenticado correctamente sin 2FA (No recomendado si 2FA es estricto).");
             RedirectManager.RedirectTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "Home" : ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
         {
+            // === LÓGICA DE 2FA ESTRICTA Y OBLIGATORIA ===
+            Logger.LogInformation("Redirigiendo a verificación 2FA. Es obligatorio para este usuario.");
             RedirectManager.RedirectTo(
                 "Account/LoginWith2fa",
                 new() { ["returnUrl"] = string.IsNullOrWhiteSpace(ReturnUrl) ? "Home" : ReturnUrl, ["rememberMe"] = Input.RememberMe });

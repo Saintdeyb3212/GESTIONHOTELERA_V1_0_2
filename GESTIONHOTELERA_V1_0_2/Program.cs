@@ -91,27 +91,26 @@ builder.Services.AddScoped<IReporteServicio, ReporteServicio>();
 var app = builder.Build();
 
 // --- INICIO DE CREACIÓN DE BASE DE DATOS Y USUARIO ADMIN ---
-Console.WriteLine("--- CONECTANDO A: " + connectionString);
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    Console.WriteLine("--- Intentando migrar la base de datos en: " + connectionString);
+
     try
     {
         // 1. Asegura que la base de datos exista y tenga las tablas creadas
         await dbContext.Database.MigrateAsync();
 
-        // 2. Crea los roles (Administrador, etc.)
-        await RoleSeeder.SeedAsync(services);
-
-        // 3. Crea el usuario administrador por defecto
+        // 2. Usamos SOLO el IdentityDataSeeder porque tu código ya crea los roles y los usuarios ahí mismo
         await IdentityDataSeeder.SeedAsync(services);
+        
+        Console.WriteLine(">>>> EXITO: SEEDER COMPLETADO CORRECTAMENTE <<<<");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocurrió un error al poblar la base de datos.");
+        // Si algo falla, el programa se detendrá y te escupirá el error en la cara para que sepamos qué es
+        Console.WriteLine(">>>> ERROR FATAL EN EL SEEDER: " + ex.Message + " <<<<");
+        throw; 
     }
 }
 // --- FIN DE CREACIÓN ---
